@@ -14,10 +14,10 @@ class TelaCadastro extends StatefulWidget {
 class _TelaCadastroState extends State<TelaCadastro> {
   final _tituloController = TextEditingController();
   final _descricaoController = TextEditingController();
+  final _categoriaController = TextEditingController();
 
-  String _dataPrevista = '';
+  DateTime? _dataPrevista;
   bool _importante = false;
-  bool _realizada = false;
 
   Tarefa? _tarefaEditando;
   bool _dadosCarregados = false;
@@ -33,27 +33,30 @@ class _TelaCadastroState extends State<TelaCadastro> {
         _tarefaEditando = tarefa;
         _tituloController.text = tarefa.titulo;
         _descricaoController.text = tarefa.descricao;
-        _dataPrevista = tarefa.dataPrevista;
+        _categoriaController.text = tarefa.categoria;
+        _dataPrevista = DateTime.parse(tarefa.dataPrevista);
         _importante = tarefa.importante;
-        _realizada = tarefa.realizada;
       }
 
       _dadosCarregados = true;
     }
   }
 
+  String _formatarData(DateTime data) {
+    return '${data.day.toString().padLeft(2, '0')}/${data.month.toString().padLeft(2, '0')}/${data.year}';
+  }
+
   Future<void> _selecionarData() async {
     final data = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
+      initialDate: _dataPrevista ?? DateTime.now(),
       firstDate: DateTime(2020),
       lastDate: DateTime(2035),
     );
 
     if (data != null) {
       setState(() {
-        _dataPrevista =
-            '${data.day.toString().padLeft(2, '0')}/${data.month.toString().padLeft(2, '0')}/${data.year}';
+        _dataPrevista = data;
       });
     }
   }
@@ -61,9 +64,12 @@ class _TelaCadastroState extends State<TelaCadastro> {
   Future<void> _salvar() async {
     if (_tituloController.text.trim().isEmpty ||
         _descricaoController.text.trim().isEmpty ||
-        _dataPrevista.isEmpty) {
+        _categoriaController.text.trim().isEmpty ||
+        _dataPrevista == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Preencha todos os campos obrigatórios.')),
+        const SnackBar(
+          content: Text('Preencha todos os campos obrigatórios.'),
+        ),
       );
       return;
     }
@@ -72,9 +78,10 @@ class _TelaCadastroState extends State<TelaCadastro> {
       id: _tarefaEditando?.id,
       titulo: _tituloController.text.trim(),
       descricao: _descricaoController.text.trim(),
-      dataPrevista: _dataPrevista,
+      dataPrevista: _dataPrevista!.toIso8601String(),
       importante: _importante,
-      realizada: _realizada,
+      realizada: _tarefaEditando?.realizada ?? false,
+      categoria: _categoriaController.text.trim(),
     );
 
     final provider = Provider.of<TarefaProvider>(context, listen: false);
@@ -117,13 +124,21 @@ class _TelaCadastroState extends State<TelaCadastro> {
               ),
             ),
             const SizedBox(height: 12),
+            TextField(
+              controller: _categoriaController,
+              decoration: const InputDecoration(
+                labelText: 'Categoria',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(
                   child: Text(
-                    _dataPrevista.isEmpty
+                    _dataPrevista == null
                         ? 'Nenhuma data selecionada'
-                        : 'Data prevista: $_dataPrevista',
+                        : 'Data prevista: ${_formatarData(_dataPrevista!)}',
                   ),
                 ),
                 ElevatedButton(
@@ -139,15 +154,6 @@ class _TelaCadastroState extends State<TelaCadastro> {
               onChanged: (valor) {
                 setState(() {
                   _importante = valor ?? false;
-                });
-              },
-            ),
-            CheckboxListTile(
-              title: const Text('Realizada'),
-              value: _realizada,
-              onChanged: (valor) {
-                setState(() {
-                  _realizada = valor ?? false;
                 });
               },
             ),
