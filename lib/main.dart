@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'providers/tarefa_provider.dart';
 import 'telas/tela_cadastro.dart';
 import 'telas/tela_detalhes.dart';
+import 'telas/tela_inicio.dart';
 import 'telas/tela_lista.dart';
 import 'util/rotas.dart';
 
@@ -21,9 +22,12 @@ class AppTarefas extends StatelessWidget {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'App de Tarefas',
-        theme: ThemeData(primarySwatch: Colors.blue),
-        initialRoute: Rotas.telaLista,
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+        ),
+        initialRoute: Rotas.telaInicio,
         routes: {
+          Rotas.telaInicio: (context) => const TelaInicio(),
           Rotas.telaLista: (context) => const TelaLista(),
           Rotas.telaCadastro: (context) => const TelaCadastro(),
           Rotas.telaDetalhes: (context) => const TelaDetalhes(),
