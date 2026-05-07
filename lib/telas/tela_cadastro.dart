@@ -92,7 +92,8 @@ class _TelaCadastroState extends State<TelaCadastro> {
       await provider.editarTarefa(tarefa);
     }
 
-    Navigator.pop(context);
+    if (!mounted) return;
+    Navigator.of(context).pop();
   }
 
   @override
